@@ -28,10 +28,10 @@ public class ToExcels {
 	static String out_path = "c:/";
 	
 	// 模板文件 如果不存在则新建文件(仅有一行表头)
-	static String in_file = "tables_20190507.xlsx";
+	static String in_file = "单位工伤行业类别_缴费是原类_20190509.xlsx";
 	
 	// 输出文件 与模板路径+文件名相同时 会覆盖模板文件
-	static String out_file = "tables_20190507.xlsx"; 
+	static String out_file = "单位工伤行业类别_缴费是原类_20190509.xlsx"; 
 
 	static String sql_con_1 = "SET CURRENT SCHEMA = \"FSSB\"";
 	static String sql_con_2 = "SET CURRENT PATH = \"SYSIBM\",\"SYSFUN\",\"SYSPROC\",\"SYSIBMADM\",\"FSSB\"";
@@ -52,7 +52,9 @@ public class ToExcels {
 			
 			// 导出 excel
 			System.out.println("开始导出...");
-			ExportExcel.ResultSetToExeclStartRow(rs, in_path+in_file, "Sheet1", out_path+out_file, "Sheet1", 2, true);
+			ExportExcel.ResultSetToExeclStartRow(rs, in_path+in_file, "Sheet1"
+					, out_path+out_file, "缴费是原类", 2
+					, true, 60);
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -64,7 +66,7 @@ public class ToExcels {
 	
 	public static boolean getRs() throws Exception{
 		stmt = conn.createStatement();
-		System.out.println("run-sql:" + sql);
+		System.out.println("run-sql:\n" + sql);
         rs = stmt.executeQuery(sql);
         return true;
 	}
@@ -72,7 +74,7 @@ public class ToExcels {
 	public static void getConn() throws Exception{
 		if (conn != null) return;
 		Class.forName("com.ibm.db2.jcc.DB2Driver");
-        conn = DriverManager.getConnection(url, "db2admin", "db2admin");            
+        conn = DriverManager.getConnection(url, "dev_liqj", "Lqj#20190201");            
 	}
 	
 	public static void closeAll()throws Exception{
@@ -82,6 +84,13 @@ public class ToExcels {
 	}
 	
 	// jdbc:db2://{#ip#}:{#port#}/{#dbname#}
-	static String url = "jdbc:db2://127.0.0.1:50000/test2";
-	static String sql = "select * from syscat.tables";
+	static String url = "jdbc:db2://189.30.100.63:50000/fssbjdb";
+	static String sql = "select sbjgdm ||'-'|| f_gg_mc('sbjg','',sbjgdm) 社保机构\n" + 
+			"  ,dwbh 单位编号,dwmc 单位名称\n" + 
+			"  ,dwlx||value('-'||f_gg_jdmb('dwlx',dwlx),'') 单位类型\n" + 
+			"  ,gshylb||value('-'||f_gg_jdmb('gshylb',gshylb),'') \"工伤行业类别(缴费)\"\n" + 
+			"  ,GSHYLB_SJFL||value('-'||f_gg_jdmb('gshylb',GSHYLB_SJFL),'') \"工伤行业类别(属性)\"\n" + 
+			"from ys_dwjbxx where GSHYLB in ('001','002','003','004')\n" + 
+			"  and value(dwlx,'')<>'81' --and GSHYLB_SJFL<>''\n" + 
+			"order by sbjgdm ,dwbh for read only\n";
 }

@@ -17,8 +17,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -42,30 +44,36 @@ public class ExportExcel {
      */
     public static void createSheetHead(Sheet sheet, int rowNum, Map<Integer, Object> values) {
         Row row = sheet.createRow(rowNum);
+
+        
+        // 设置标题头样式
+        CellStyle colsy = sheet.getWorkbook().createCellStyle();
+
+        Font font = sheet.getWorkbook().createFont();
+        font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD); // 粗体显示
+        colsy.setFont(font);
+
+        // 边框
+        colsy.setBorderTop(CellStyle.BORDER_THIN);
+        colsy.setBorderLeft(CellStyle.BORDER_THIN);
+        colsy.setBorderRight(CellStyle.BORDER_THIN);
+        colsy.setBorderBottom(CellStyle.BORDER_THIN);
+        // 背景
+        colsy.setFillForegroundColor((short)23); // GREY_25_PERCENT.index=22
+        colsy.setFillBackgroundColor((short)23); // GREY_50_PERCENT.index=23
+        //colsy.setFillPattern(CellStyle.NO_FILL);
+        colsy.setFillPattern(CellStyle.SOLID_FOREGROUND);
+        // 自动换行
+        colsy.setWrapText(true);
+        // 对齐
+        colsy.setAlignment(CellStyle.ALIGN_CENTER);
+        colsy.setVerticalAlignment(CellStyle.VERTICAL_CENTER);
+        
         for (Integer cellNum : values.keySet()) {
             Cell cell = row.createCell(cellNum);
             Object value = values.get(cellNum);
             generateValue(value, cell);
-
-            // 设置标题头样式
-            CellStyle colsy = sheet.getWorkbook().createCellStyle();
-            // 边框
-            colsy.setBorderTop(CellStyle.BORDER_THIN);
-            colsy.setBorderLeft(CellStyle.BORDER_THIN);
-            colsy.setBorderRight(CellStyle.BORDER_THIN);
-            colsy.setBorderBottom(CellStyle.BORDER_THIN);
-            // 背景
-            colsy.setFillForegroundColor((short)23); // GREY_25_PERCENT.index=22
-            colsy.setFillBackgroundColor((short)23); // GREY_50_PERCENT.index=23
-            //colsy.setFillPattern(CellStyle.NO_FILL);
-            colsy.setFillPattern(CellStyle.SOLID_FOREGROUND);
-            // 自动换行
-            colsy.setWrapText(true);
-            // 对齐
-            colsy.setAlignment(CellStyle.ALIGN_CENTER);
-            colsy.setVerticalAlignment(CellStyle.VERTICAL_CENTER);
             cell.setCellStyle(colsy);
-
         }
     }
     /**
@@ -270,14 +278,14 @@ public class ExportExcel {
             if(! (value instanceof String)) {
                 value = String.valueOf(value);
             }
-            int len = ((String) value).length();
+            int len = ((String) value).getBytes().length;
             if(maxLen[index]<len) maxLen[index] = len;
             cell.setCellValue((String) value);
         }else if(xlsType==1){
             if(!(value instanceof Double)){
                 value = Double.valueOf(String.valueOf(value));
             }
-            int len = String.valueOf((Double) value).length();
+            int len = String.valueOf((Double) value).getBytes().length;
             if(maxLen[index]<len) maxLen[index] = len;
 
             cell.setCellValue((Double) value);
@@ -285,7 +293,7 @@ public class ExportExcel {
             if(!(value instanceof Integer)){
                 value = Integer.valueOf(String.valueOf(value));
             }
-            int len = String.valueOf((Integer) value).length();
+            int len = String.valueOf((Integer) value).getBytes().length;
             if(maxLen[index]<len) maxLen[index] = len;
 
             cell.setCellValue( (Integer)value);
@@ -540,7 +548,7 @@ public class ExportExcel {
     public static boolean ResultSetToExeclStartRow(ResultSet rs    		
     		,String inFileName,String inSheetName
     		,String outFileName,String outSheetName
-    		,int startRow,boolean isAutoWidth) throws Exception {
+    		,int startRow,boolean isAutoWidth,int maxColumnWidth) throws Exception {
         // 写表头
         ResultSetMetaData rsmd = rs.getMetaData();
         int cols=rsmd.getColumnCount();
@@ -694,6 +702,7 @@ public class ExportExcel {
             // 重设列宽
             // 使用模板来输出，不能获取相应字段 Row row = sheet.getRow(0); ==>> null
             if (isAutoWidth){
+            	System.out.println(" 自动列宽：");
 	            for (int i = 0; i < cols; i++) {
 	                //String colname=(String)colnames.get(Integer.valueOf(i));
 	                //int collen = colname.length();
@@ -702,13 +711,13 @@ public class ExportExcel {
 	                int setlen = maxlen;
 	                //if(!(jtype==91||jtype==92||jtype==93)){
 	                //}
-	                if (setlen>25){
-	                    setlen=25;
+	                if (setlen>maxColumnWidth){
+	                    setlen=maxColumnWidth;
 	                }
 	                if (setlen<4){
 	                    setlen=4;
 	                }
-	                //System.out.println(colname+",i="+i+",maxlen="+maxlen+",set-collen="+(setlen*260));
+	                System.out.println("   index="+i+",maxlen="+maxlen+",setlen="+setlen+",set-collen="+(setlen*260));
 	                sheet.setColumnWidth(i,setlen*265); // 1/256个字符
 	
 	            }
