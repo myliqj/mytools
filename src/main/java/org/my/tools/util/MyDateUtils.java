@@ -63,4 +63,7 @@ public class MyDateUtils {
     public static String formatDateTime(Date date) {
         return NORM_DATETIME_FORMAT.get().format(date);
     }
+    public static String formatCurrentDateTime() {
+        return NORM_DATETIME_FORMAT.get().format(new Date());
+    }
 }

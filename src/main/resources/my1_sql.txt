@@ -1,0 +1,1 @@
+select * from sysibm.sysdummy1

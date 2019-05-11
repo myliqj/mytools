@@ -102,7 +102,7 @@ public class ExportExcel {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-	public static boolean createTemplateFile(String fileName,String SheetName,Map head,Map value) throws IOException {
+	public static boolean createTemplateFile(String fileName,String SheetName,Map head,Map value) throws Exception {
         File file=new File(fileName);
         if(file.exists()){
             System.out.println("文件["+fileName+"]已存在，不再处理！");
@@ -135,7 +135,8 @@ public class ExportExcel {
             return true;
         } catch (final Exception e) {
             e.printStackTrace();
-            return false;
+            throw e;
+            //return false;
         }finally {
             if (fos!=null){
                 fos.close();
@@ -545,7 +546,7 @@ public class ExportExcel {
      * @return 是否生成文件成功
      * @throws Exception
      */
-    public static boolean ResultSetToExeclStartRow(ResultSet rs    		
+    public static int ResultSetToExeclStartRow(ResultSet rs    		
     		,String inFileName,String inSheetName
     		,String outFileName,String outSheetName
     		,int startRow,boolean isAutoWidth,int maxColumnWidth) throws Exception {
@@ -564,7 +565,7 @@ public class ExportExcel {
         File inFile = new File(inFileName); 
         if (!inFile.exists()){
             boolean isSucc = createTemplateFile(inFileName,inSheetName,colnames,null);
-            if(!isSucc) return false;
+            if(!isSucc) return -1;
         }
         SXSSFWorkbook wb =  null;
         try {
@@ -573,7 +574,9 @@ public class ExportExcel {
             wb = new SXSSFWorkbook(xwb);
             
             if (MyStrUtils.isNotEmpty(outSheetName) && !inSheetName.equals(outSheetName)){
-            	wb.setSheetName(wb.getSheetIndex(inSheetName), outSheetName);
+            	int in_index = wb.getSheetIndex(inSheetName);
+            	if(in_index<0) in_index = 0;
+            	wb.setSheetName(in_index, outSheetName);
             }
             Sheet sheet = wb.getSheet(outSheetName);
             /*// yyyy-mm-dd hh:mm:ss
@@ -736,10 +739,11 @@ public class ExportExcel {
                     if (fos != null) fos.close();
                 }
             }
-            return true;
+            return rowCount;
         }catch (Exception ex){
             ex.printStackTrace();
-            return false;
+            throw ex;
+            //return false;
         } finally {
             // 删除临时文件
             if(wb!=null){

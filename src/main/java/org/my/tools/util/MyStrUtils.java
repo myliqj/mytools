@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 public class MyStrUtils {
 
@@ -20,6 +21,9 @@ public class MyStrUtils {
         return str!=null && str.length()==0;
     }
 
+    public static String getStringDef(Object obj,String def){
+        return getStringDef(String.valueOf(obj),def);
+    }
     public static String getStringDef(String obj,String def){
         return isNull(obj)?def:obj;
     }
@@ -127,4 +131,28 @@ public class MyStrUtils {
         }
         return result;
     }
+    
+    /**
+	 * 将空字符和null串变为指定的值
+	 * 
+	 * @param target
+	 * @param replacement
+	 * @return String
+	 */
+	public static String changeEmptyObjectToValue(Object target, String replacement) {
+		if (target == null || "".equals(target.toString().trim())) {
+			return replacement;
+		} else {
+			return target.toString();
+		}
+	}
+	
+	
+	public static String inputString(String prompt){
+		Scanner readInput = new Scanner(System.in);
+		System.out.print(prompt);
+		String str = readInput.nextLine();
+		readInput.close();
+		return str;
+	}
 }

@@ -11,13 +11,30 @@ import org.apache.commons.dbutils.DbUtils;
 
 public class MyDbUtils {
 	
-	
-	public static void execSql(Connection conn,String[] sql) throws Exception{
+	/**
+	 * 执行数组所有SQL语句（都是非Query类）
+	 * @param conn 数据库联接
+	 * @param sqls 语句数组
+	 * @param isErrorCoutinue 报错误时是否继续执行:true-继续执行,false-错误就返回
+	 * @return 执行成功数量 
+	 * @throws Exception
+	 */
+	public static int execSql(Connection conn,String[] sqls,boolean isErrorCoutinue) throws Exception{
+		int success = 0;
 		Statement stmt = conn.createStatement();
-		for (String s : sql) {			
-			stmt.execute(s);
+		for (String sql : sqls) {
+			if (MyStrUtils.isEmpty(sql)) continue;
+			try {
+				System.out.println("Execute-Sql:" + sql);
+				boolean isSuccess = stmt.execute(sql);
+				success++;
+			} catch (Exception e) {
+				e.printStackTrace();
+				if (!isErrorCoutinue) break;
+			}
 		}
 		stmt.close();
+		return success;
 	}
 
     /**
