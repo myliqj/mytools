@@ -257,7 +257,7 @@ public class ExportExcel {
         TIME_WITH_TIMEZONE = 2013;
         TIMESTAMP_WITH_TIMEZONE = 2014;    */
         int r = 0; // str or other
-        if (v==-5||v==6||v==7||v==-8||v==2||v==3){
+        if (v==-5||v==6||v==7||v==8||v==2||v==3){
             r=1; // num-double
         }else if(v==4||v==5){
             r=2; // num-int

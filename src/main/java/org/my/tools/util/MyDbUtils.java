@@ -1,9 +1,16 @@
 package org.my.tools.util;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 
@@ -204,4 +211,53 @@ public class MyDbUtils {
         }
         return obj.toString();
     }
+    
+    public static void updateOneBlob(Connection conn,String sql,byte[] data) throws SQLException{
+    	PreparedStatement ps=conn.prepareStatement(sql);
+        ps.setBytes(1, data);
+        ps.executeUpdate();
+    }
+
+    public static boolean readOneBlobToFile(Connection conn,String sql,String fileName) throws SQLException, IOException{
+    	Statement st = conn.createStatement();
+    	ResultSet rs=st.executeQuery(sql);
+        if (rs.next()){
+        	InputStream is = rs.getBinaryStream(1);        	
+        	FileOutputStream fos = new FileOutputStream(fileName); 
+            byte[] buf = new byte[2048];
+            int read;
+            while ((read = is.read(buf)) != -1) {
+                fos.write(buf, 0, read);
+            } 
+            fos.flush();
+            fos.close();
+        	is.close(); 
+        	closeQuietlys(rs,st);
+        	return true;
+       }
+       closeQuietlys(rs,st);
+       return false;
+    }
+    
+    public static byte[] readOneBlob(Connection conn,String sql) throws SQLException, IOException{
+    	Statement st = conn.createStatement();
+    	ResultSet rs=st.executeQuery(sql);
+        if (rs.next()){
+        	//Blob bb=rs.getBlob(1);
+        	InputStream is = rs.getBinaryStream(1);
+        	byte[] data = new byte[is.available()];
+        	is.read(data);
+        	is.close();
+        	return data;
+        	
+        	//return bb.getBytes(bb.length(), 0);
+//        	bb.getBinaryStream();
+//        	InputStream is= bb.getBinaryStream();
+//        	ObjectInputStream ois=new ObjectInputStream(is);
+//        	O oo=(O) ois.readObject();
+        }
+        return null;
+    }
+    
+    
 }
